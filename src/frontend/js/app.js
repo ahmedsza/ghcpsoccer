@@ -7,11 +7,13 @@ const dashboardLink = document.getElementById('dashboard-link');
 const teamsLink = document.getElementById('teams-link');
 const playersLink = document.getElementById('players-link');
 const reportsLink = document.getElementById('reports-link');
+const aboutLink = document.getElementById('about-link');
 
 const dashboardSection = document.getElementById('dashboard-section');
 const teamsSection = document.getElementById('teams-section');
 const playersSection = document.getElementById('players-section');
 const reportsSection = document.getElementById('reports-section');
+const aboutSection = document.getElementById('about-section');
 
 const totalTeamsElement = document.getElementById('total-teams');
 const totalPlayersElement = document.getElementById('total-players');
@@ -29,6 +31,7 @@ dashboardLink.addEventListener('click', () => showSection(dashboardSection));
 teamsLink.addEventListener('click', () => showSection(teamsSection));
 playersLink.addEventListener('click', () => showSection(playersSection));
 reportsLink.addEventListener('click', () => showSection(reportsSection));
+aboutLink.addEventListener('click', () => showSection(aboutSection));
 
 // Quick action buttons
 addTeamBtn.addEventListener('click', () => {
@@ -55,12 +58,14 @@ function showSection(section) {
     teamsSection.classList.remove('active');
     playersSection.classList.remove('active');
     reportsSection.classList.remove('active');
+    aboutSection.classList.remove('active');
     
     // Remove active class from nav links
     dashboardLink.classList.remove('active');
     teamsLink.classList.remove('active');
     playersLink.classList.remove('active');
     reportsLink.classList.remove('active');
+    aboutLink.classList.remove('active');
     
     // Show the selected section
     section.classList.add('active');
@@ -94,6 +99,8 @@ function showSection(section) {
     } else if (section === reportsSection) {
         reportsLink.classList.add('active');
         setupReportsSection();
+    } else if (section === aboutSection) {
+        aboutLink.classList.add('active');
     }
 }
 
