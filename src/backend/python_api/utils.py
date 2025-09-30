@@ -27,5 +27,10 @@ def is_strong_password(password):
 
 # create function to write to a file called log.txt
 def log_message(message):
-    with open('log.txt', 'a') as f:
-        f.write(message + '\n')
+    import os
+    log_file = os.path.join(os.path.dirname(__file__), 'log.txt')
+    try:
+        with open(log_file, 'a') as f:
+            f.write(message + '\n')
+    except IOError as e:
+        print(f"Error writing to log file: {e}")

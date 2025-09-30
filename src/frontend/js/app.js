@@ -155,10 +155,32 @@ function hideLoading() {
     loadingOverlay.classList.add('hidden');
 }
 
+// Dad Joke functionality
+async function loadDadJoke() {
+    const jokeElement = document.getElementById('dad-joke');
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/dad-joke`);
+        const data = await response.json();
+        
+        if (data.joke) {
+            jokeElement.textContent = data.joke;
+        } else {
+            jokeElement.textContent = "Why did the soccer player bring string to the game? To tie the score!";
+        }
+    } catch (error) {
+        console.error('Error loading dad joke:', error);
+        jokeElement.textContent = "What do you call a sleeping bull on a soccer field? A bulldozer!";
+    }
+}
+
 // Initialize the application
 function initializeApp() {
     // Show dashboard by default
     showSection(dashboardSection);
+    
+    // Load the dad joke
+    loadDadJoke();
 }
 
 // Call when DOM is ready

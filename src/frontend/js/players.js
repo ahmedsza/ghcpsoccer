@@ -242,38 +242,60 @@ function openPlayerModal(playerId) {
 function closePlayerModal() { playerModal.style.display = 'none'; }
 
 async function savePlayer(e) {
-    e.preventDefault();
-    const playerId = playerIdInput.value ? parseInt(playerIdInput.value) : null;
-    const payload = {
-        full_name: playerNameInput.value,
-        date_of_birth: playerDobInput.value,
-        nationality: playerNationalityInput.value,
-        position: playerPositionInput.value,
-        jersey_number: parseInt(playerNumberInput.value),
-        height: parseFloat(playerHeightInput.value),
-        weight: parseFloat(playerWeightInput.value),
-        contract_start: playerDobInput.value,  // placeholder, could add separate inputs
-        contract_end: playerDobInput.value,
-        salary: 0,
-        player_value: parseFloat(playerValueInput.value),
-        team_id: parseInt(playerTeamSelect.value),
-        photo_url: '',
-        is_injured: playerInjuredSelect.value === 'true',
-        injury_details: playerInjuredSelect.value === 'true' ? injuryDetailsInput.value : null,
-        rating: parseInt(playerRatingInput.value)
-    };
-    showLoading();
-    try {
-        let resp;
-        if (playerId) {
-            resp = await fetch(`${API_ENDPOINTS.players}/${playerId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        } else {
-            resp = await fetch(API_ENDPOINTS.players, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        }
-        if (!resp.ok) throw new Error('Failed to save player');
-        await loadPlayers();
-        closePlayerModal();
-    } catch (e) { console.error(e); } finally { hideLoading(); }
+  e.preventDefault();
+  
+  // Date validation
+  const dob = new Date(playerDobInput.value);
+  const today = new Date();
+  const age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  
+  // Check if date is in future
+  if (dob > today) {
+    alert('Date of birth cannot be in the future');
+    return;
+  }
+  
+  // Calculate actual age considering month and day
+  const isUnder18 = age < 18 || (age === 18 && monthDiff < 0) || 
+            (age === 18 && monthDiff === 0 && today.getDate() < dob.getDate());
+  
+  if (isUnder18) {
+    alert('Player must be 18 years or older');
+    return;
+  }
+
+  const playerId = playerIdInput.value ? parseInt(playerIdInput.value) : null;
+  const payload = {
+    full_name: playerNameInput.value,
+    date_of_birth: playerDobInput.value,
+    nationality: playerNationalityInput.value,
+    position: playerPositionInput.value,
+    jersey_number: parseInt(playerNumberInput.value),
+    height: parseFloat(playerHeightInput.value),
+    weight: parseFloat(playerWeightInput.value),
+    contract_start: playerDobInput.value,  // placeholder, could add separate inputs
+    contract_end: playerDobInput.value,
+    salary: 0,
+    player_value: parseFloat(playerValueInput.value),
+    team_id: parseInt(playerTeamSelect.value),
+    photo_url: '',
+    is_injured: playerInjuredSelect.value === 'true',
+    injury_details: playerInjuredSelect.value === 'true' ? injuryDetailsInput.value : null,
+    rating: parseInt(playerRatingInput.value)
+  };
+  showLoading();
+  try {
+    let resp;
+    if (playerId) {
+      resp = await fetch(`${API_ENDPOINTS.players}/${playerId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    } else {
+      resp = await fetch(API_ENDPOINTS.players, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    }
+    if (!resp.ok) throw new Error('Failed to save player');
+    await loadPlayers();
+    closePlayerModal();
+  } catch (e) { console.error(e); } finally { hideLoading(); }
 }
 
 async function deletePlayer(playerId) {

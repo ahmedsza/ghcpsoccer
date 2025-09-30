@@ -7,6 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
 import os
+import requests
+import time
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -76,6 +78,7 @@ class Player(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'name': self.full_name,  # Add name field for frontend compatibility
             'full_name': self.full_name,
             'date_of_birth': self.date_of_birth.isoformat() if self.date_of_birth else None,
             'nationality': self.nationality,
@@ -419,6 +422,10 @@ def player_performance_report():
     report = {
         'team': team.to_dict(),
         'players': [p.to_dict() for p in sorted_players],
+        'highestRated': sorted_players[0].to_dict(),
+        'lowestRated': sorted_players[-1].to_dict(),
+        'averageRating': avg_rating,
+        # Keep backward compatibility
         'highest_rated': sorted_players[0].to_dict(),
         'lowest_rated': sorted_players[-1].to_dict(),
         'average_rating': avg_rating
@@ -482,6 +489,47 @@ def injury_report():
         'injury_rate': injury_rate
     }
     return jsonify(report)
+
+# Dad joke caching
+dad_joke_cache = {
+    'joke': None,
+    'timestamp': 0
+}
+
+@app.route('/api/dad-joke', methods=['GET'])
+def get_dad_joke():
+    """Get a dad joke with 30-second caching"""
+    current_time = time.time()
+    
+    # Check if we have a cached joke that's still fresh (less than 30 seconds old)
+    if (dad_joke_cache['joke'] is not None and 
+        (current_time - dad_joke_cache['timestamp']) < 30):
+        return jsonify({'joke': dad_joke_cache['joke'], 'cached': True})
+    
+    try:
+        # Fetch new joke from external API
+        response = requests.get('https://icanhazdadjoke.com/', 
+                              headers={'Accept': 'application/json'},
+                              timeout=5)
+        
+        if response.status_code == 200:
+            joke_data = response.json()
+            joke_text = joke_data.get('joke', 'Why did the soccer player bring string to the game? To tie the score!')
+            
+            # Update cache
+            dad_joke_cache['joke'] = joke_text
+            dad_joke_cache['timestamp'] = current_time
+            
+            return jsonify({'joke': joke_text, 'cached': False})
+        else:
+            # Fallback joke if API fails
+            fallback_joke = "Why don't soccer players ever get cold? Because they have lots of fans!"
+            return jsonify({'joke': fallback_joke, 'cached': False})
+            
+    except requests.RequestException:
+        # Fallback joke if request fails
+        fallback_joke = "What do you call a sleeping bull on a soccer field? A bulldozer!"
+        return jsonify({'joke': fallback_joke, 'cached': False})
 
 if __name__ == '__main__':
     # Create data directory if it doesn't exist
